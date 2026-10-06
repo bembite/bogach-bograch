@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Богач / Бограч</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #111;
+      color: #eee;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      box-sizing: border-box;
+      padding: 15px;
+      font-size: 18px;
+      background: #222;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 8px;
+      resize: vertical;
+    }
+
+    button {
+      margin: 15px 0;
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      border: 0;
+      border-radius: 6px;
+    }
+
+    #result {
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 15px;
+      line-height: 1.8;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .stats {
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Богач / Бограч</h1>
+
+  <textarea id="input">Діма ти придурок, йди спи і залиш ШІ в спокої</textarea>
+
+  <br>
+
+  <button onclick="convert()">Перетворити</button>
+  <button onclick="copyResult()">Копіювати</button>
+
+  <div class="stats" id="stats"></div>
+
+  <div id="result"></div>
+
+  <script>
+    function textToBinary(text) {
+      const bytes = new TextEncoder().encode(text);
+
+      return Array.from(bytes)
+        .map(byte => byte.toString(2).padStart(8, '0'))
+        .join('');
+    }
+
+    function convert() {
+      const text = document.getElementById('input').value;
+
+      const binary = textToBinary(text);
+
+      const result = binary
+        .split('')
+        .map(bit => bit === '1' ? 'Богач' : 'Бограч')
+        .join(' ');
+
+      document.getElementById('result').textContent = result;
+
+      document.getElementById('stats').textContent =
+        `Байт: ${new TextEncoder().encode(text).length} | Біт: ${binary.length}`;
+    }
+
+    async function copyResult() {
+      const result = document.getElementById('result').textContent;
+
+      await navigator.clipboard.writeText(result);
+
+      alert('Скопійовано!');
+    }
+
+    // Автоматично обробити текст після відкриття
+    convert();
+  </script>
+
+</body>
+</html>
