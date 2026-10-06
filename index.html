@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 900px;
+      max-width: 1000px;
       margin: 40px auto;
       padding: 0 20px;
       background: #111;
@@ -17,7 +17,7 @@
 
     textarea {
       width: 100%;
-      min-height: 150px;
+      min-height: 180px;
       box-sizing: border-box;
       padding: 15px;
       font-size: 18px;
@@ -29,7 +29,7 @@
     }
 
     button {
-      margin: 15px 0;
+      margin: 10px 5px 10px 0;
       padding: 12px 24px;
       font-size: 16px;
       cursor: pointer;
@@ -45,11 +45,20 @@
       line-height: 1.8;
       word-break: break-word;
       white-space: pre-wrap;
+      min-height: 50px;
     }
 
     .stats {
       color: #aaa;
-      margin-bottom: 10px;
+      margin: 10px 0;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    h2 {
+      margin-top: 35px;
     }
   </style>
 </head>
@@ -58,18 +67,43 @@
 
   <h1>Богач / Бограч</h1>
 
+  <h2>Текст → Богач / Бограч</h2>
+
   <textarea id="input">Діма ти придурок, йди спи і залиш ШІ в спокої</textarea>
 
   <br>
 
-  <button onclick="convert()">Перетворити</button>
-  <button onclick="copyResult()">Копіювати</button>
+  <button onclick="encode()">Закодувати</button>
+  <button onclick="copyResult()">Копіювати результат</button>
 
-  <div class="stats" id="stats"></div>
+  <div class="stats" id="encodeStats"></div>
 
   <div id="result"></div>
 
+
+  <h2>Богач / Бограч → текст</h2>
+
+  <textarea
+    id="decodeInput"
+    placeholder="Встав сюди Богач Бограч Бограч..."
+  ></textarea>
+
+  <br>
+
+  <button onclick="decode()">Розкодувати</button>
+  <button onclick="copyDecoded()">Копіювати текст</button>
+
+  <div class="stats" id="decodeStats"></div>
+
+  <div id="decodedResult"></div>
+
+
   <script>
+
+    // =========================
+    // ТЕКСТ → BINARY
+    // =========================
+
     function textToBinary(text) {
       const bytes = new TextEncoder().encode(text);
 
@@ -78,7 +112,34 @@
         .join('');
     }
 
-    function convert() {
+
+    // =========================
+    // BINARY → ТЕКСТ
+    // =========================
+
+    function binaryToText(binary) {
+
+      if (binary.length % 8 !== 0) {
+        throw new Error('Кількість бітів має бути кратною 8');
+      }
+
+      const bytes = [];
+
+      for (let i = 0; i < binary.length; i += 8) {
+        const byte = binary.slice(i, i + 8);
+        bytes.push(parseInt(byte, 2));
+      }
+
+      return new TextDecoder().decode(new Uint8Array(bytes));
+    }
+
+
+    // =========================
+    // КОДУВАННЯ
+    // =========================
+
+    function encode() {
+
       const text = document.getElementById('input').value;
 
       const binary = textToBinary(text);
@@ -90,11 +151,73 @@
 
       document.getElementById('result').textContent = result;
 
-      document.getElementById('stats').textContent =
+      document.getElementById('encodeStats').textContent =
         `Байт: ${new TextEncoder().encode(text).length} | Біт: ${binary.length}`;
     }
 
+
+    // =========================
+    // ДЕКОДУВАННЯ
+    // =========================
+
+    function decode() {
+
+      const input = document
+        .getElementById('decodeInput')
+        .value
+        .trim();
+
+      if (!input) {
+        document.getElementById('decodedResult').textContent = '';
+        return;
+      }
+
+      // Розбиваємо по пробілах, переносах рядків тощо
+      const words = input.split(/\s+/);
+
+      let binary = '';
+
+      for (const word of words) {
+
+        if (word === 'Богач') {
+          binary += '1';
+
+        } else if (word === 'Бограч') {
+          binary += '0';
+
+        } else {
+          document.getElementById('decodedResult').textContent =
+            `Помилка: невідоме слово "${word}"`;
+
+          return;
+        }
+      }
+
+      try {
+
+        const text = binaryToText(binary);
+
+        document.getElementById('decodedResult').textContent = text;
+
+        document.getElementById('decodeStats').textContent =
+          `Біт: ${binary.length} | Байт: ${binary.length / 8}`;
+
+      } catch (error) {
+
+        document.getElementById('decodedResult').textContent =
+          'Помилка: некоректна послідовність Богач/Бограч';
+
+        document.getElementById('decodeStats').textContent = '';
+      }
+    }
+
+
+    // =========================
+    // КОПІЮВАННЯ
+    // =========================
+
     async function copyResult() {
+
       const result = document.getElementById('result').textContent;
 
       await navigator.clipboard.writeText(result);
@@ -102,8 +225,20 @@
       alert('Скопійовано!');
     }
 
-    // Автоматично обробити текст після відкриття
-    convert();
+
+    async function copyDecoded() {
+
+      const result = document.getElementById('decodedResult').textContent;
+
+      await navigator.clipboard.writeText(result);
+
+      alert('Скопійовано!');
+    }
+
+
+    // Автоматичне кодування при відкритті
+    encode();
+
   </script>
 
 </body>
